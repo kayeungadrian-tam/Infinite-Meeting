@@ -16,7 +16,7 @@ $ pip install -r requirements.txt
 
 ```shell
 $ cd opencv-for-web
-$ python .\src\main.opy
+$ python .\src\main.py
 ```
 
 ## Instruction
