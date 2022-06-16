@@ -6,21 +6,20 @@ import time
 import shutil
 import sys
 
-sys.path.append(os.path.join(os.getcwd(), "config"))
-
-from cfg import *
-
 from v_cam import VirtualCamera
 from detector import Detector 
 
-
 class Webcam():
-    def __init__(self, width=1280, height=720, cam_id=0) -> None:
+    def __init__(self, width=1280, height=720, cam_id=0):
         self.cap = cv2.VideoCapture(cam_id)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         self.width = width
         self.height = height
+
+    def test(self):
+        pass
+
 
 def init_video(video_path):
     try:
@@ -34,6 +33,15 @@ def init_video(video_path):
         with open(video_path, 'w') as fp: pass
 
 def main():
+    record, play = False, False
+    v_path = 'tmp/tmp_video.avi'
+    frame_rate = 60
+    prev = 0
+    font = cv2.FONT_HERSHEY_SIMPLEX  
+    fontScale = 1   
+    thickness = 2
+    dist = -1
+
     cam = Webcam()
     detector = Detector()
     v_cam = VirtualCamera(width=cam.width, height=cam.height, fps=30)
@@ -43,6 +51,8 @@ def main():
 
     video = cv2.VideoCapture(v_path)
     ret, frame = cam.cap.read()
+
+    prev = 0
 
     while cam.cap.isOpened():
         saved_size = os.path.getsize(v_path)
@@ -56,10 +66,9 @@ def main():
         time_elapsed = time.time() - prev
         key =  cv2.waitKey(15)
 
-        title = "Real frame"
+        title = "Real_frame"
 
         if key == 27:
-            cv2.destroyAllWindows()
             break
 
         color = (0, 255, 0) 
@@ -68,7 +77,7 @@ def main():
         frame_copy = frame.copy()
         
         if key == ord('r'):
-            x_ref, y_ref = x, y
+            x_ref, y_ref, z_ref = x, y, z
             cv2.imwrite("tmp/tmp_capture.png", frame)
             start = cv2.imread("tmp/tmp_capture.png")
             record = ~record
@@ -86,14 +95,26 @@ def main():
                 pass
             sleep(1)
             play = ~play
-            x_ref, y_ref = x, y
+            x_ref, y_ref, z_ref = x, y, z
+
+        
+        if key ==32:
+            time.sleep(3)
+            play = False
+            try:
+                ret_video, frame_video = video.read()
+                cv2.imwrite("tmp/tmp_start.png", frame_video)
+            except:
+                pass
+
 
         frame.flags.writeable = False
         results = detector.detect(frame)
         frame.flags.writeable = True
 
         try:
-            x, y = detector.calculate_xy(results)
+            x, y, z = detector.calculate_xy(results)
+            # detector.plot(results)
         except:
             pass
 
@@ -104,7 +125,7 @@ def main():
             color = (0, 0, 255)
             videoWriter.write(frame_copy)
             dist = math.sqrt( (x - x_ref)**2 + (y - y_ref)**2 )
-            
+
         if play:        
             title = "Playing"
             color = (255, 0 ,0)
@@ -143,7 +164,7 @@ def main():
 
         cv2.rectangle(frame, (0,0), (cam.width, 50), (122, 122, 122), -1)
         cv2.rectangle(frame, (0, cam.height), (cam.width, cam.height-50), (122, 122, 122), -1)
-        cv2.putText(frame, " Record: 'r' | Switch mode: 'p' | Quit: 'ESC' ", (50, cam.height-15), font, fontScale, (255, 255, 255), thickness, cv2.LINE_AA)
+        cv2.putText(frame, " Record: 'r' | Switch mode: 'p' | Quit: 'ESC' |  Pause: 'Spacebar'", (50, cam.height-15), font, fontScale, (255, 255, 255), thickness, cv2.LINE_AA)
         cv2.putText(frame, f'Diff: ', (350, 30), font, 
                         fontScale, (255, 255, 255), thickness, cv2.LINE_AA)
         cv2.putText(frame, f'{dist:.3f}', (450, 30), font, 
@@ -165,10 +186,7 @@ def main():
     if saved:
         videoWriter.release()
     shutil.rmtree("./tmp")
+    cv2.destroyAllWindows()
 
-def test(**args):
-    "Testing function"
-    pass
 
-if __name__ == "__main__":
-    main()
+main()

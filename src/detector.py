@@ -12,11 +12,23 @@ class Detector():
 
     def calculate_xy(self, result):
         if result.pose_landmarks:
-            x, y = 0, 0
+            x, y, z = 0, 0, 0
             for idx in [0, 11, 12]:
                 x += result.pose_landmarks.landmark[idx].x 
                 y += result.pose_landmarks.landmark[idx].y
-                
+                z += result.pose_landmarks.landmark[idx].z
+
             x = x*self.width/3
             y = y*self.height/3
-        return x, y
+            z = z/3
+
+        return x, y, z
+
+    def plot(self, result):
+        if result.pose_landmarks:
+            for idx in [0, 11, 12]:
+                x = result.pose_landmarks.landmark[idx].x
+                y = result.pose_landmarks.landmark[idx].y
+                z = result.pose_landmarks.landmark[idx].z
+
+            print(x, y, z, end="\r")
