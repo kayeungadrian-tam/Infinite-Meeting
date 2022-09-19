@@ -10,7 +10,7 @@ from v_cam import VirtualCamera
 from detector import Detector 
 
 class Webcam():
-    def __init__(self, width=1280, height=720, cam_id=0):
+    def __init__(self, width=1280, height=720, cam_id=1):
         self.cap = cv2.VideoCapture(cam_id)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
