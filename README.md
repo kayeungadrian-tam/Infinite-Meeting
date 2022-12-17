@@ -1,4 +1,4 @@
-# OpenCV-for-Web
+# Infinite Meeting
 
 A program that will create an infinite loop video for web meeting.
 
